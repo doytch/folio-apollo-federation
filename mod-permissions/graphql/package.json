@@ -1,0 +1,19 @@
+{
+  "name": "mod-permissions-graphql",
+  "version": "1.0.0",
+  "description": "GraphQL server for mod-permissions",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon index.js"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@apollo/federation": "^0.23.0",
+    "apollo-server": "^2.22.2",
+    "axios": "^0.21.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.7"
+  }
+}

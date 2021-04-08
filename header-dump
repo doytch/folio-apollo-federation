@@ -1,0 +1,8 @@
+HTTP/1.1 201 Created
+vary: origin
+X-Okapi-Trace: POST mod-authtoken-2.8.0-SNAPSHOT.88 http://10.0.2.15:9131/bl-users/login : 202 45889us
+Content-Type: application/json
+x-okapi-token: eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJkaWt1X2FkbWluIiwidXNlcl9pZCI6Ijg5YzEzN2I5LTIwNDEtNTI2OC04ZmM4LWMyN2ExOTA4YzgzNiIsImlhdCI6MTYxNzczMzk4OSwidGVuYW50IjoiZGlrdSJ9.MILjcKPl7QfMHh9TT5cljmpanqAX7mZkvH-qpuRb3Rs
+transfer-encoding: chunked
+X-Okapi-Trace: POST mod-users-bl-6.3.0-SNAPSHOT.100 http://10.0.2.15:9144/bl-users/login : 201 1059254us
+
