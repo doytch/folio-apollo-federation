@@ -1,0 +1,32 @@
+{
+  "id": "mod-apollo-federation-gateway-1.0.0",
+  "name": "Apollo Federation gateway server ",
+  "provides": [
+    {
+      "id": "apollo-gateway",
+      "version": "1.0",
+      "handlers" : [{
+        "methods" : [ "GET" ],
+        "pathPattern" : "/service-list",
+        "permissionsRequired": [ ]
+      }, {
+        "methods" : [ "POST" ],
+        "pathPattern" : "/service-list",
+        "permissionsRequired": [ ]
+      }, {
+        "methods" : [ "DELETE" ],
+        "pathPattern" : "/service-list",
+        "permissionsRequired": [ ]
+      }]
+    }, {
+      "id": "graphql",
+      "version": "1.0",
+      "handlers": [{
+        "methods" : [ "GET", "POST" ],
+        "pathPattern" : "/graphql",
+        "permissionsRequired": [ ]
+      }]
+    }
+  ],
+  "requires": []
+}

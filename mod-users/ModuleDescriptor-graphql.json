@@ -1,0 +1,20 @@
+{
+  "id": "mod-users-graphql-1.0.0",
+  "name": "GraphQL server for mod-users data",
+  "provides": [
+    {
+      "id": "graphql-module",
+      "interfaceType": "multiple",
+      "version": "1.0",
+      "handlers": [{
+        "methods" : [ "GET", "POST" ],
+        "pathPattern" : "/graphql",
+        "permissionsRequired": [ ]
+      }]
+    }
+  ],
+  "requires": [],
+  "launchDescriptor": {
+    "exec": "node index.js"
+  }
+}
