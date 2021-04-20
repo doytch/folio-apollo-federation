@@ -3,7 +3,7 @@
   "name": "Apollo Federation gateway server ",
   "provides": [
     {
-      "id": "apollo-gateway",
+      "id": "apollo-federation-gateway",
       "version": "1.0",
       "handlers" : [{
         "methods" : [ "GET" ],
@@ -26,7 +26,18 @@
         "pathPattern" : "/graphql",
         "permissionsRequired": [ ]
       }]
+    }, {
+      "id": "_tenant",
+      "version": "2.0",
+      "interfaceType": "system",
+      "handlers": [
+        {
+          "methods": [ "POST" ],
+          "pathPattern": "/_/tenant"
+        }
+      ]
     }
+
   ],
   "requires": []
 }

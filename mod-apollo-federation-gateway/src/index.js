@@ -1,87 +1,43 @@
+const axios = require('axios');
 const express = require('express');
 const { ApolloServer } = require('apollo-server-express');
 const { ApolloGateway } = require('@apollo/gateway');
-const { createHttpTerminator } = require('http-terminator');
 
 const OkapiModuleDataSource = require('./OkapiModuleDataSource');
+const Terminator = require('./Terminator');
 const { filterOkapiHeaders } = require('../../okapi-apollo-utils');
+const serviceListHandlers = require('./routes/serviceList');
 
-let serviceList = [
-  // { name: 'users', url: 'http://localhost:4001', tenant: 'diku' },
-  // { name: 'permissions', url: 'http://localhost:4002', tenant: 'diku' },
-];
+const APOLLO_FEDERATION_SERVICE_INTERFACE_ID = 'apollo-federation-service';
 
-let httpTerminator;
+const DEFAULT_PORT = 4000;
+const DEFAULT_OKAPI_URL = 'http://localhost:9130';
+const DEFAULT_OKAPI_TENANT = 'diku';
 
-const parseServiceFromRequest = (req, res) => {
-  const name = req.body?.name;
-  if (!name) {
-    res.status(400);
-    res.send('"name" was not defined in the POST body');
-    res.end();
-    return undefined;
-  }
-
-  if (!req.headers['x-okapi-url']) {
-    res.status(400);
-    res.send('x-okapi-url header is not defined');
-    res.end();
-    return undefined;
-  }
-
-  // The path `/graphql` is defined in the `pathPattern` of the `graphql-module` interface.
-  const url = `${req.headers['x-okapi-url']}/graphql`;
-
-  if (!req.headers['x-okapi-tenant']) {
-    res.status(400);
-    res.send('x-okapi-tenant header is not defined');
-    res.end();
-    return undefined;
-  }
-
-  const tenant = req.headers['x-okapi-tenant'];
-
-  return { name, tenant, url };
-}
-const handleServiceListPost = async (req, res) => {
-  const service = parseServiceFromRequest(req, res);
-
-  serviceList = serviceList.filter(s => s?.name !== service.name);
-  serviceList.push(service);
-
-  res.status(200);
-  res.send(JSON.stringify(service, null, '\t'));
-  res.end();
-
-  await httpTerminator?.terminate();
-  startServer();
-}
-
-const handleServiceListDelete = async (req, res) => {
-  const service = parseServiceFromRequest(req, res);
-
-  serviceList = serviceList.filter(s => s?.name !== service.name);
-
-  res.status(200);
-  res.end();
-
-  await httpTerminator?.terminate();
-  startServer();
-}
-
-const handleServiceListGet = (req, res) => {
-  res.status(200);
-  res.send(JSON.stringify(serviceList, null, '\t'));
-  res.end();
+const checkForServices = (okapiUrl, okapiTenant) => {
+  console.log(`Checking for Apollo services at URL: ${okapiUrl} for tenant: ${okapiTenant}...`)
+  return axios
+    .get(`${okapiUrl}/_/proxy/tenants/${okapiTenant}/modules?provide=${APOLLO_FEDERATION_SERVICE_INTERFACE_ID}`)
+    .then(response => {
+      return (response?.data ?? []).map(service => ({
+        name: service.id,
+        tenant: okapiTenant,
+        url: `${okapiUrl}/graphql`
+      }));
+    })
+    .catch(error => console.error(`Failed to fetch existing Apollo services: ${error.message}`));
 };
 
-const startServer = () => {
+const startServer = (serviceList = []) => {
   const app = express();
   app.use(express.json()) // for parsing application/json
 
   if (!serviceList.length) {
     console.log('No services defined yet...not starting Apollo Gateway.')
   } else {
+    console.log('Starting Apollo gateway with the following services:');
+    console.table(serviceList);
+
     // Initialize an ApolloGateway instance and pass it an array of
     // your implementing service names and URLs
     const gateway = new ApolloGateway({
@@ -107,15 +63,27 @@ const startServer = () => {
     apolloServer.applyMiddleware({ app });
   }
 
-  app.get('/service-list', handleServiceListGet);
-  app.post('/service-list', handleServiceListPost);
-  app.delete('/service-list/', handleServiceListDelete);
+  app.get('/service-list', serviceListHandlers.GET);
+  app.post('/service-list', (req, res) => serviceListHandlers.POST(req, res).then(serviceList => startServer(serviceList)));
+  app.delete('/service-list/', (req, res) => serviceListHandlers.DELETE(req, res).then(serviceList => startServer(serviceList)));
 
-  const server = app.listen({ port: 4000 });
+  app.post('/_/tenant', async (req, res) => {
+    console.log('Received notification of activation from Okapi via _tenant interface...');
 
-  httpTerminator = createHttpTerminator({ server })
+    init(req.headers['x-okapi-url'], req.headers['x-okapi-tenant']);
 
-  console.log(`🚀 Listening on http://localhost:4000/graphql`);
+    res.status(204);
+    res.end();
+  });
+
+  Terminator.terminate();
+  const server = app.listen({ port: DEFAULT_PORT }, () => console.log(`🚀 Listening on http://localhost:${DEFAULT_PORT}`));
+  Terminator.set(server);
 };
 
-startServer();
+init = async (okapiUrl, okapiTenant) => {
+  const services = await checkForServices(okapiUrl, okapiTenant);
+  startServer(services);
+}
+
+init(DEFAULT_OKAPI_URL, DEFAULT_OKAPI_TENANT);

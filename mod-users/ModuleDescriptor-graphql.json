@@ -3,7 +3,7 @@
   "name": "GraphQL server for mod-users data",
   "provides": [
     {
-      "id": "graphql-module",
+      "id": "apollo-federation-service",
       "interfaceType": "multiple",
       "version": "1.0",
       "handlers": [{

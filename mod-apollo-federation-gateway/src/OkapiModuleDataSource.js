@@ -10,16 +10,16 @@ class OkapiModuleDataSource extends RemoteGraphQLDataSource {
   }
 
   willSendRequest({ request, context }) {
-    console.log('\nwillSendRequest')
+    // console.log('\nwillSendRequest')
 
     // Take all of the Okapi-related headers and pass them along.
     Object.entries(context?.okapiHeaders ?? {}).forEach(([key, value]) => {
-      console.log(`${key}: ${value}`)
+      // console.log(`${key}: ${value}`)
       request.http.headers.set(key, value);
     });
 
-    console.log(request);
-    console.log({ name: this.name, tenant: this.tenant })
+    // console.log(request);
+    // console.log({ name: this.name, tenant: this.tenant })
     // console.log(this.name);
     // console.log(this.url);
     // console.log(this.tenant);
