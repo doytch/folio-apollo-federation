@@ -25,3 +25,15 @@ mod-apollo-federation-gateway provides the `apollo-federation-gateway` interface
 ### `apollo-federation-service` Interface
 
 mod-users-graphql and mod-permissions-graphql provide the `apollo-federation-service` interface, which is a `multiple` interface type. When it's enabled for a tenant, the gateway queries Okapi (using the `provide` query param) to determine which already-installed modules implement the `apollo-federation-service` interface and add them to its service list. Subsequent GraphQL requests from the gateway to the service are routed using the module ID which was either provided by the module when it was added to the tenant, or discovered by the gateway itself when querying Okapi.
+
+## What's the Footprint?
+
+When they're not handling a request, the modules basically do nothing. After all, they basically only proxy requests. Here's an indication of their been-running-for-a-while-and-just-served-a-few-requests-and-maybe-haven't-GC'd-everything-yet footprint.
+
+```
+[ 2:54PM] ~/dev/apollo-fed ps aux | grep nodemon | grep -v grep
+  PID  %CPU %MEM      VSZ    RSS   TT  STAT STARTED      TIME COMMAND
+12934   0.0  0.2  4623592  27252 s001  S+   11:41AM   0:00.43 node ./mod-apollo-federation-gateway/node_modules/.bin/nodemon src/index.js
+12930   0.0  0.2  4623536  26000 s005  S+   11:41AM   0:00.40 node ./mod-users/graphql/node_modules/.bin/nodemon index.js
+12926   0.0  0.2  4623328  26152 s002  S+   11:41AM   0:00.41 node ./mod-permissions/graphql/node_modules/.bin/nodemon index.js
+```
