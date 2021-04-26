@@ -9,7 +9,6 @@
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
-    "@apollo/federation": "^0.23.0",
     "apollo-server": "^2.22.2",
     "axios": "^0.21.1"
   },

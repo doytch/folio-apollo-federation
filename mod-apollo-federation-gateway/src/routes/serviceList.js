@@ -35,6 +35,8 @@ const handleServiceListPost = async (req, res) => {
   const service = parseServiceFromRequest(req, res);
   const serviceList = ServiceList.add(service);
 
+  console.log(`Added service: ${service.name}`);
+
   res.status(200);
   res.send(JSON.stringify(service, null, '\t'));
   res.end();
@@ -45,6 +47,8 @@ const handleServiceListPost = async (req, res) => {
 const handleServiceListDelete = async (req, res) => {
   const service = parseServiceFromRequest(req, res);
   const serviceList = ServiceList.delete(service);
+
+  console.log(`Removed service: ${service.name}`);
 
   res.status(200);
   res.end();
