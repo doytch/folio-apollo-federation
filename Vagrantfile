@@ -44,15 +44,18 @@ Vagrant.configure("2") do |config|
   # the path on the host to the actual folder. The second argument is
   # the path on the guest to mount the folder. And the optional third
   # argument is a set of non-required options.
-  # config.vm.synced_folder "../data", "/vagrant_data"
+  config.vm.synced_folder "./mod-apollo-federation-gateway", "/mod-apollo-federation-gateway"
+  config.vm.synced_folder "./mod-users", "/mod-users"
+  config.vm.synced_folder "./mod-permissions", "/mod-permissions"
+  config.vm.synced_folder "./okapi-apollo-utils", "/okapi-apollo-utils"
 
   # Provider-specific configuration so you can fine-tune various
   # backing providers for Vagrant. These expose provider-specific options.
   # Example for VirtualBox:
 
   config.vm.provider "virtualbox" do |v|
-    v.memory = 10240
-    v.cpus = 2
+    v.memory = 6000
+    v.cpus = 1
   end
 
   # View the documentation for the provider you are using for more

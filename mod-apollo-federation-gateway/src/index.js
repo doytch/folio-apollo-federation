@@ -2,6 +2,7 @@ const axios = require('axios');
 const express = require('express');
 const { ApolloServer } = require('apollo-server-express');
 const { ApolloGateway } = require('@apollo/gateway');
+const throttle = require('lodash.throttle');
 
 const OkapiModuleDataSource = require('./OkapiModuleDataSource');
 const Terminator = require('./Terminator');
@@ -28,7 +29,7 @@ const checkForServices = (okapiUrl, okapiTenant) => {
     .catch(error => console.error(`Failed to fetch existing Apollo services: ${error.message}`));
 };
 
-const startServer = (serviceList = []) => {
+const _startServer = (serviceList = []) => {
   const app = express();
   app.use(express.json()) // for parsing application/json
 
@@ -80,6 +81,13 @@ const startServer = (serviceList = []) => {
   const server = app.listen({ port: DEFAULT_PORT }, () => console.log(`🚀 Listening on http://localhost:${DEFAULT_PORT}`));
   Terminator.set(server);
 };
+
+// create a throttled version because we may get several POSTs all at once during startup
+const startServer = throttle(
+  _startServer,
+  5000,
+  { leading: false }
+);
 
 init = async (okapiUrl, okapiTenant) => {
   const services = await checkForServices(okapiUrl, okapiTenant);

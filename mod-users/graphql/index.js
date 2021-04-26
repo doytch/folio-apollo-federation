@@ -9,8 +9,6 @@ const server = new OkapiApolloServer({
     usersAPI: new UsersAPI(),
   }),
   moduleId: 'mod-users-graphql-1.0.0',
-  okapiUrl: 'http://localhost:9130',
-  okapiTenant: 'diku',
   port: 4001,
   resolvers,
   typeDefs,
