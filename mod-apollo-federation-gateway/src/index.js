@@ -6,6 +6,7 @@ const throttle = require('lodash.throttle');
 
 const OkapiModuleDataSource = require('./OkapiModuleDataSource');
 const Terminator = require('./Terminator');
+const ServiceList = require('./ServiceList');
 const { filterOkapiHeaders } = require('../../okapi-apollo-utils');
 const serviceListHandlers = require('./routes/serviceList');
 
@@ -16,7 +17,7 @@ const DEFAULT_OKAPI_URL = 'http://localhost:9130';
 const DEFAULT_OKAPI_TENANT = 'diku';
 
 const checkForServices = (okapiUrl, okapiTenant) => {
-  console.log(`Checking for Apollo services at URL: ${okapiUrl} for tenant: ${okapiTenant}...`)
+  console.log(`🔎 Checking for Apollo services at URL: ${okapiUrl} for tenant: ${okapiTenant}...`)
   return axios
     .get(`${okapiUrl}/_/proxy/tenants/${okapiTenant}/modules?provide=${APOLLO_FEDERATION_SERVICE_INTERFACE_ID}`)
     .then(response => {
@@ -34,9 +35,9 @@ const _startServer = (serviceList = []) => {
   app.use(express.json()) // for parsing application/json
 
   if (!serviceList.length) {
-    console.log('No services defined yet...not starting Apollo Gateway.')
+    console.log('⏳ No services defined yet...not starting Apollo Gateway.')
   } else {
-    console.log('Starting Apollo gateway with the following services:');
+    console.log('✅ Starting Apollo gateway with the following services:');
     console.table(serviceList);
 
     // Initialize an ApolloGateway instance and pass it an array of
@@ -66,12 +67,14 @@ const _startServer = (serviceList = []) => {
 
   app.get('/service-list', serviceListHandlers.GET);
   app.post('/service-list', (req, res) => serviceListHandlers.POST(req, res).then(serviceList => startServer(serviceList)));
-  app.delete('/service-list/', (req, res) => serviceListHandlers.DELETE(req, res).then(serviceList => startServer(serviceList)));
+  app.delete('/service-list', (req, res) => serviceListHandlers.DELETE(req, res).then(serviceList => startServer(serviceList)));
 
   app.post('/_/tenant', async (req, res) => {
-    console.log('Received notification of activation from Okapi via _tenant interface...');
-
-    init(req.headers['x-okapi-url'], req.headers['x-okapi-tenant']);
+    const { body: { module_to } } = req;
+    if (module_to) {
+      console.log('⏫  Received notification of activation from Okapi via _tenant interface...');
+      init(req.headers['x-okapi-url'], req.headers['x-okapi-tenant']);
+    }
 
     res.status(204);
     res.end();
@@ -90,7 +93,8 @@ const startServer = throttle(
 );
 
 init = async (okapiUrl, okapiTenant) => {
-  const services = await checkForServices(okapiUrl, okapiTenant);
+  const services = await checkForServices(okapiUrl, okapiTenant) ?? [];
+  services.forEach(service => ServiceList.add(service));
   startServer(services);
 }
 

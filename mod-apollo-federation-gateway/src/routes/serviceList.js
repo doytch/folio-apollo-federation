@@ -4,7 +4,7 @@ const parseServiceFromRequest = (req, res) => {
   const name = req.body?.name;
   if (!name) {
     res.status(400);
-    res.send('"name" was not defined in the POST body');
+    res.send('"name" was not defined in the request body');
     res.end();
     return undefined;
   }
@@ -33,9 +33,11 @@ const parseServiceFromRequest = (req, res) => {
 
 const handleServiceListPost = async (req, res) => {
   const service = parseServiceFromRequest(req, res);
+  if (!service) return;
+
   const serviceList = ServiceList.add(service);
 
-  console.log(`Added service: ${service.name}`);
+  console.log(`⬆️  Added service: ${service.name}`);
 
   res.status(200);
   res.send(JSON.stringify(service, null, '\t'));
@@ -46,9 +48,11 @@ const handleServiceListPost = async (req, res) => {
 
 const handleServiceListDelete = async (req, res) => {
   const service = parseServiceFromRequest(req, res);
+  if (!service) return;
+
   const serviceList = ServiceList.delete(service);
 
-  console.log(`Removed service: ${service.name}`);
+  console.log(`⬇️  Removed service: ${service.name}`);
 
   res.status(200);
   res.end();

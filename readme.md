@@ -12,6 +12,16 @@ This workspace demonstrates the usage of [Apollo Federation](https://www.apollog
 1. Start mod-users-graphql: `cd mod-users/graphql && npm install && npm start`
 1. Start mod-permissions-graphql: `cd mod-permissions/graphql && npm install && npm start`
 1. Add modules to Okapi: `./startup.sh`
-1. Restart mod-users-graphql and mod-permissions-graphql by navigating to their console, typing `rs` and hitting `Return`. Note, this shouldn't be necessary once they implement the `tenant` API.
 1. To test everything works, run a sample query: `./query-extended-user`
 
+## How It Works
+
+This workspace consists of an Apollo Federation Gateway (mod-apollo-federation-gateway) and two Apollo Federation Services (mod-permissions-graphql and mod-users-graphql). For an overview of [how Apollo Federation works, see its docs](https://www.apollographql.com/docs/federation/). Federated service discovery is the novel bit of work here. Essentially, what we're doing is providing the core feature of Apollo Studio within the Folio architecture: providing a way for the gateway server to dynamically update its list of Federation services.
+
+### `apollo-federation-gateway` Interface
+
+mod-apollo-federation-gateway provides the `apollo-federation-gateway` interface. This interface has endpoints to support CRUD operations on the list of Federation services that the Gateway is handling. Whenever the service list is updated, the gateway reboots and rebuilds the composite schema from the federated services. These endpoints are used by services such as mod-users-graphql when they are enabled for a tenant, so that they can notify the gateway of their existence via a POST to that endpoint.
+
+### `apollo-federation-service` Interface
+
+mod-users-graphql and mod-permissions-graphql provide the `apollo-federation-service` interface, which is a `multiple` interface type. When it's enabled for a tenant, the gateway queries Okapi (using the `provide` query param) to determine which already-installed modules implement the `apollo-federation-service` interface and add them to its service list. Subsequent GraphQL requests from the gateway to the service are routed using the module ID which was either provided by the module when it was added to the tenant, or discovered by the gateway itself when querying Okapi.
